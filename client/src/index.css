@@ -1,3 +1,6 @@
+/* FontAwesome icons support */
+@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -57,9 +60,6 @@
     @apply font-sans antialiased bg-background text-foreground;
   }
 }
-
-/* FontAwesome icons support */
-@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css');
 
 /* Custom animations for the attendance system */
 @keyframes pulse-green {
