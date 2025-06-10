@@ -1,0 +1,143 @@
+import { useState, useEffect } from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { database, ref, onValue } from "@/lib/firebase";
+import type { AttendanceRecord, StudentStats } from "@shared/schema";
+
+interface AttendancePanelProps {
+  recentAttendance: AttendanceRecord[];
+}
+
+export default function AttendancePanel({ recentAttendance }: AttendancePanelProps) {
+  const [studentStats, setStudentStats] = useState<StudentStats[]>([]);
+  const [totalStudents, setTotalStudents] = useState(0);
+  const [presentToday, setPresentToday] = useState(0);
+  const [attendanceRate, setAttendanceRate] = useState(0);
+
+  // Mock student data for demonstration
+  const mockStudents: StudentStats[] = [
+    { id: 1, roll: '245', name: 'Sarah Johnson', totalClasses: 20, attendedClasses: 19, percentage: 95 },
+    { id: 2, roll: '178', name: 'Mike Chen', totalClasses: 20, attendedClasses: 18, percentage: 88 },
+    { id: 3, roll: '092', name: 'Emma Davis', totalClasses: 20, attendedClasses: 14, percentage: 72 },
+    { id: 4, roll: '156', name: 'Alex Rodriguez', totalClasses: 20, attendedClasses: 18, percentage: 91 },
+    { id: 5, roll: '203', name: 'Lisa Wang', totalClasses: 20, attendedClasses: 17, percentage: 83 },
+    { id: 6, roll: '167', name: 'David Thompson', totalClasses: 20, attendedClasses: 15, percentage: 76 },
+  ];
+
+  useEffect(() => {
+    setStudentStats(mockStudents);
+    setTotalStudents(mockStudents.length);
+    
+    // Calculate present today from recent attendance
+    const today = new Date().toDateString();
+    const todayAttendance = recentAttendance.filter(record => 
+      new Date(record.timestamp).toDateString() === today
+    );
+    const uniqueStudentsToday = new Set(todayAttendance.map(record => record.roll));
+    setPresentToday(uniqueStudentsToday.size);
+    
+    // Calculate overall attendance rate
+    const totalPossibleClasses = mockStudents.length * 20;
+    const totalAttended = mockStudents.reduce((sum, student) => sum + student.attendedClasses, 0);
+    setAttendanceRate(Math.round((totalAttended / totalPossibleClasses) * 100));
+  }, [recentAttendance]);
+
+  const getProgressBarColor = (percentage: number) => {
+    if (percentage >= 85) return 'bg-green-500';
+    if (percentage >= 75) return 'bg-yellow-500';
+    return 'bg-red-500';
+  };
+
+  return (
+    <Card className="bg-white">
+      <CardContent className="p-6">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-2xl font-semibold text-gray-900">Attendance Dashboard</h2>
+          <div className="flex items-center space-x-2">
+            <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+            <span className="text-sm text-gray-600">Live Updates</span>
+          </div>
+        </div>
+
+        {/* Statistics Cards */}
+        <div className="grid grid-cols-3 gap-4 mb-6">
+          <div className="bg-blue-50 p-4 rounded-lg">
+            <div className="text-2xl font-bold text-blue-600">{totalStudents}</div>
+            <div className="text-sm text-gray-600">Total Students</div>
+          </div>
+          <div className="bg-green-50 p-4 rounded-lg">
+            <div className="text-2xl font-bold text-green-600">{presentToday}</div>
+            <div className="text-sm text-gray-600">Present Today</div>
+          </div>
+          <div className="bg-orange-50 p-4 rounded-lg">
+            <div className="text-2xl font-bold text-orange-600">{attendanceRate}%</div>
+            <div className="text-sm text-gray-600">Attendance Rate</div>
+          </div>
+        </div>
+
+        {/* Real-time Log */}
+        <div className="bg-gray-50 rounded-lg p-4 mb-6">
+          <h3 className="font-medium text-gray-900 mb-3 flex items-center">
+            <i className="fas fa-clock text-blue-600 mr-2"></i>
+            Real-time Check-in Log
+          </h3>
+          
+          <div className="space-y-2 max-h-48 overflow-y-auto">
+            {recentAttendance.length === 0 ? (
+              <div className="text-center py-4 text-gray-500">
+                <i className="fas fa-clock text-2xl mb-2"></i>
+                <p>No check-ins yet today</p>
+              </div>
+            ) : (
+              recentAttendance.slice(0, 5).map((record, index) => (
+                <div key={index} className="flex items-center justify-between py-2 px-3 bg-white rounded border-l-4 border-green-500">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
+                      <i className="fas fa-check text-white text-xs"></i>
+                    </div>
+                    <div>
+                      <p className="font-medium text-gray-900">Roll #{record.roll}</p>
+                      <p className="text-sm text-gray-500">
+                        {new Date(record.timestamp).toLocaleTimeString()}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="text-green-600 text-sm font-medium">Checked In</div>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+
+        {/* Student Attendance Percentages */}
+        <div className="bg-gray-50 rounded-lg p-4">
+          <h3 className="font-medium text-gray-900 mb-3 flex items-center">
+            <i className="fas fa-chart-bar text-blue-600 mr-2"></i>
+            Student Attendance Records
+          </h3>
+          
+          <div className="space-y-3 max-h-64 overflow-y-auto">
+            {studentStats.map((student) => (
+              <div key={student.id} className="flex items-center justify-between py-2">
+                <div className="flex items-center space-x-3">
+                  <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
+                    <span className="text-xs font-semibold text-gray-700">{student.roll}</span>
+                  </div>
+                  <span className="font-medium text-gray-900">{student.name}</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <div className="w-20 bg-gray-200 rounded-full h-2">
+                    <div 
+                      className={`h-2 rounded-full ${getProgressBarColor(student.percentage)}`}
+                      style={{ width: `${student.percentage}%` }}
+                    ></div>
+                  </div>
+                  <span className="text-sm font-medium text-gray-700">{student.percentage}%</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}

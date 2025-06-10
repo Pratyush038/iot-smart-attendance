@@ -1,0 +1,107 @@
+import { useState } from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+
+export default function VideoSimulation() {
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [currentCaption, setCurrentCaption] = useState("Step 1: Student approaches the proximity sensor...");
+
+  const captions = [
+    "Step 1: Student approaches the proximity sensor...",
+    "Step 2: Proximity sensor detects student presence",
+    "Step 3: Student enters roll number on keypad",
+    "Step 4: System validates the input",
+    "Step 5: NeoPixel LED confirms successful check-in",
+    "Step 6: Buzzer provides audio feedback",
+    "Step 7: Data is logged to Firebase in real-time"
+  ];
+
+  const playSimulation = () => {
+    setIsPlaying(true);
+    let captionIndex = 0;
+    
+    const interval = setInterval(() => {
+      captionIndex++;
+      if (captionIndex < captions.length) {
+        setCurrentCaption(captions[captionIndex]);
+      } else {
+        setIsPlaying(false);
+        setCurrentCaption(captions[0]);
+        clearInterval(interval);
+      }
+    }, 3000);
+  };
+
+  const workflowSteps = [
+    { step: 1, text: "Proximity sensor detects student approach" },
+    { step: 2, text: "Student enters roll number on keypad" },
+    { step: 3, text: "NeoPixel LED confirms successful check-in" },
+    { step: 4, text: "Data is logged to Firebase in real-time" }
+  ];
+
+  return (
+    <Card className="bg-white mb-8">
+      <CardContent className="p-6">
+        <div className="flex items-center mb-4">
+          <i className="fas fa-play-circle text-blue-600 text-2xl mr-3"></i>
+          <h2 className="text-2xl font-semibold text-gray-900">Sensor Workflow Simulation</h2>
+        </div>
+        
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2">
+            {/* Simulated video player */}
+            <div className="relative bg-gray-900 rounded-lg overflow-hidden aspect-video">
+              {/* Classroom simulation background */}
+              <div className="w-full h-full bg-gradient-to-br from-blue-900 to-blue-700 flex items-center justify-center">
+                <div className="text-center text-white">
+                  <div className="mb-4">
+                    <i className="fas fa-chalkboard-teacher text-6xl mb-4 opacity-60"></i>
+                    <div className="grid grid-cols-3 gap-2 max-w-xs mx-auto">
+                      {[...Array(9)].map((_, i) => (
+                        <div key={i} className="w-8 h-8 bg-white bg-opacity-20 rounded"></div>
+                      ))}
+                    </div>
+                  </div>
+                  <p className="text-lg">Smart Attendance System Demo</p>
+                </div>
+              </div>
+              
+              {!isPlaying && (
+                <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
+                  <Button
+                    size="lg"
+                    className="w-16 h-16 rounded-full bg-white bg-opacity-90 hover:bg-opacity-100 text-gray-700"
+                    onClick={playSimulation}
+                  >
+                    <i className="fas fa-play text-xl ml-1"></i>
+                  </Button>
+                </div>
+              )}
+              
+              {/* Captions overlay */}
+              <div className="absolute bottom-4 left-4 right-4">
+                <div className="bg-black bg-opacity-75 text-white p-3 rounded text-sm">
+                  <p>{currentCaption}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div className="space-y-4">
+            <h3 className="font-semibold text-gray-900">How It Works</h3>
+            <div className="space-y-3">
+              {workflowSteps.map((item) => (
+                <div key={item.step} className="flex items-start space-x-3">
+                  <div className="w-6 h-6 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-xs font-semibold">
+                    {item.step}
+                  </div>
+                  <p className="text-sm text-gray-600">{item.text}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
