@@ -33,10 +33,13 @@ export default function VideoSimulation() {
   };
 
   const workflowSteps = [
-    { step: 1, text: "Proximity sensor detects student approach" },
-    { step: 2, text: "Student enters roll number on keypad" },
-    { step: 3, text: "NeoPixel LED confirms successful check-in" },
-    { step: 4, text: "Data is logged to Firebase in real-time" }
+    { step: 1, text: "Student approaches the proximity sensor" },
+    { step: 2, text: "Proximity sensor detects student presence" },
+    { step: 3, text: "Student enters roll number on keypad" },
+    { step: 4, text: "System validates the input" },
+    { step: 5, text: "NeoPixel LED confirms successful check-in" },
+    { step: 6, text: "Buzzer provides audio feedback" },
+    { step: 7, text: "Data is logged to Firebase in real-time" }
   ];
 
   return (

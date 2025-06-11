@@ -18,6 +18,7 @@ export default function Home() {
           .map((record: any) => ({
             timestamp: record.timestamp || new Date().toISOString(),
             roll: record.roll,
+            name: record.name,
             proximity: record.proximity
           }))
           .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());

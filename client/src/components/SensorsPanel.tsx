@@ -96,9 +96,23 @@ export default function SensorsPanel({ onAttendanceSubmit }: SensorsPanelProps) 
     setIsSubmitting(true);
     
     try {
+      // Get student name from mock data (simulating database lookup)
+      const mockStudents = [
+        { roll: '245', name: 'Sarah Johnson' },
+        { roll: '178', name: 'Mike Chen' },
+        { roll: '092', name: 'Emma Davis' },
+        { roll: '156', name: 'Alex Rodriguez' },
+        { roll: '203', name: 'Lisa Wang' },
+        { roll: '167', name: 'David Thompson' },
+      ];
+      
+      const student = mockStudents.find(s => s.roll === currentInput);
+      const studentName = student ? student.name : `Student ${currentInput}`;
+      
       const attendanceRecord: AttendanceRecord = {
         timestamp: new Date().toISOString(),
         roll: currentInput,
+        name: studentName,
         proximity: proximityEnabled
       };
       
@@ -114,8 +128,8 @@ export default function SensorsPanel({ onAttendanceSubmit }: SensorsPanelProps) 
       onAttendanceSubmit(attendanceRecord);
       
       toast({
-        title: "Attendance Recorded!",
-        description: `Roll #${currentInput} checked in successfully`,
+        title: "Student Has Entered!",
+        description: `Roll #${currentInput} - ${studentName}`,
       });
       
       // Clear input

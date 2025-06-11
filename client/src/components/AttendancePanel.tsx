@@ -96,6 +96,9 @@ export default function AttendancePanel({ recentAttendance }: AttendancePanelPro
                     </div>
                     <div>
                       <p className="font-medium text-gray-900">Roll #{record.roll}</p>
+                      {record.name && (
+                        <p className="text-sm font-medium text-blue-600">{record.name}</p>
+                      )}
                       <p className="text-sm text-gray-500">
                         {new Date(record.timestamp).toLocaleTimeString()}
                       </p>

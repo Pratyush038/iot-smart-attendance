@@ -53,6 +53,7 @@ export type Student = typeof students.$inferSelect;
 export interface AttendanceRecord {
   timestamp: string;
   roll: string;
+  name?: string;
   proximity: boolean;
 }
 
