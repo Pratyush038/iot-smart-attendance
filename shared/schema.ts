@@ -11,6 +11,7 @@ export const users = pgTable("users", {
 export const attendance = pgTable("attendance", {
   id: serial("id").primaryKey(),
   roll: text("roll").notNull(),
+  name: text("name"),
   timestamp: timestamp("timestamp").notNull(),
   proximity: boolean("proximity").notNull().default(true),
 });

@@ -3,10 +3,12 @@ import { database, ref, onValue } from "@/lib/firebase";
 import VideoSimulation from "@/components/VideoSimulation";
 import SensorsPanel from "@/components/SensorsPanel";
 import AttendancePanel from "@/components/AttendancePanel";
+import CentralNotification from "@/components/CentralNotification";
 import type { AttendanceRecord } from "@shared/schema";
 
 export default function Home() {
   const [recentAttendance, setRecentAttendance] = useState<AttendanceRecord[]>([]);
+  const [latestEntry, setLatestEntry] = useState<AttendanceRecord | null>(null);
 
   useEffect(() => {
     // Listen for real-time attendance updates from Firebase
@@ -23,12 +25,20 @@ export default function Home() {
           }))
           .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
         
+        // Check for new entries (trigger central notification)
+        if (attendanceArray.length > 0) {
+          const newest = attendanceArray[0];
+          if (!latestEntry || newest.timestamp !== latestEntry.timestamp) {
+            setLatestEntry(newest);
+          }
+        }
+        
         setRecentAttendance(attendanceArray);
       }
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [latestEntry]);
 
   const handleAttendanceSubmit = (record: AttendanceRecord) => {
     // Update local state immediately for better UX
@@ -62,6 +72,9 @@ export default function Home() {
           </div>
         </div>
       </header>
+
+      {/* Central Notification */}
+      <CentralNotification latestEntry={latestEntry} />
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">

@@ -13,19 +13,36 @@ export default function AttendancePanel({ recentAttendance }: AttendancePanelPro
   const [presentToday, setPresentToday] = useState(0);
   const [attendanceRate, setAttendanceRate] = useState(0);
 
-  // Mock student data for demonstration
-  const mockStudents: StudentStats[] = [
-    { id: 1, roll: '245', name: 'Sarah Johnson', totalClasses: 20, attendedClasses: 19, percentage: 95 },
-    { id: 2, roll: '178', name: 'Mike Chen', totalClasses: 20, attendedClasses: 18, percentage: 88 },
-    { id: 3, roll: '092', name: 'Emma Davis', totalClasses: 20, attendedClasses: 14, percentage: 72 },
-    { id: 4, roll: '156', name: 'Alex Rodriguez', totalClasses: 20, attendedClasses: 18, percentage: 91 },
-    { id: 5, roll: '203', name: 'Lisa Wang', totalClasses: 20, attendedClasses: 17, percentage: 83 },
-    { id: 6, roll: '167', name: 'David Thompson', totalClasses: 20, attendedClasses: 15, percentage: 76 },
-  ];
-
   useEffect(() => {
-    setStudentStats(mockStudents);
-    setTotalStudents(mockStudents.length);
+    // Calculate student stats from real attendance data
+    const uniqueStudents = new Map<string, { roll: string; name?: string; attendanceCount: number }>();
+    
+    recentAttendance.forEach(record => {
+      const key = record.roll;
+      if (uniqueStudents.has(key)) {
+        uniqueStudents.get(key)!.attendanceCount++;
+      } else {
+        uniqueStudents.set(key, {
+          roll: record.roll,
+          name: record.name,
+          attendanceCount: 1
+        });
+      }
+    });
+
+    // Convert to StudentStats format with calculated percentages
+    const totalSessionsToDate = 5; // Estimate based on recent activity
+    const calculatedStats: StudentStats[] = Array.from(uniqueStudents.values()).map((student, index) => ({
+      id: index + 1,
+      roll: student.roll,
+      name: student.name || `Student ${student.roll}`,
+      totalClasses: totalSessionsToDate,
+      attendedClasses: student.attendanceCount,
+      percentage: Math.round((student.attendanceCount / totalSessionsToDate) * 100)
+    }));
+
+    setStudentStats(calculatedStats);
+    setTotalStudents(calculatedStats.length);
     
     // Calculate present today from recent attendance
     const today = new Date().toDateString();
@@ -35,10 +52,14 @@ export default function AttendancePanel({ recentAttendance }: AttendancePanelPro
     const uniqueStudentsToday = new Set(todayAttendance.map(record => record.roll));
     setPresentToday(uniqueStudentsToday.size);
     
-    // Calculate overall attendance rate
-    const totalPossibleClasses = mockStudents.length * 20;
-    const totalAttended = mockStudents.reduce((sum, student) => sum + student.attendedClasses, 0);
-    setAttendanceRate(Math.round((totalAttended / totalPossibleClasses) * 100));
+    // Calculate overall attendance rate from real data
+    if (calculatedStats.length > 0) {
+      const totalPossibleClasses = calculatedStats.length * totalSessionsToDate;
+      const totalAttended = calculatedStats.reduce((sum, student) => sum + student.attendedClasses, 0);
+      setAttendanceRate(totalPossibleClasses > 0 ? Math.round((totalAttended / totalPossibleClasses) * 100) : 0);
+    } else {
+      setAttendanceRate(0);
+    }
   }, [recentAttendance]);
 
   const getProgressBarColor = (percentage: number) => {
