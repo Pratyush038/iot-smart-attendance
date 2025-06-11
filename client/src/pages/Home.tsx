@@ -9,6 +9,7 @@ import type { AttendanceRecord } from "@shared/schema";
 export default function Home() {
   const [recentAttendance, setRecentAttendance] = useState<AttendanceRecord[]>([]);
   const [latestEntry, setLatestEntry] = useState<AttendanceRecord | null>(null);
+  const [lastProcessedKey, setLastProcessedKey] = useState<string | null>(null);
 
   useEffect(() => {
     // Listen for real-time attendance updates from Firebase
@@ -16,8 +17,10 @@ export default function Home() {
     const unsubscribe = onValue(attendanceRef, (snapshot) => {
       const data = snapshot.val();
       if (data) {
-        const attendanceArray: AttendanceRecord[] = Object.values(data)
-          .map((record: any) => ({
+        const dataEntries = Object.entries(data);
+        const attendanceArray: AttendanceRecord[] = dataEntries
+          .map(([key, record]: [string, any]) => ({
+            key,
             timestamp: record.timestamp || new Date().toISOString(),
             roll: record.roll,
             name: record.name,
@@ -25,11 +28,12 @@ export default function Home() {
           }))
           .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
         
-        // Check for new entries (trigger central notification)
+        // Check for new entries by comparing the latest key
         if (attendanceArray.length > 0) {
           const newest = attendanceArray[0];
-          if (!latestEntry || newest.timestamp !== latestEntry.timestamp) {
+          if (newest.key !== lastProcessedKey) {
             setLatestEntry(newest);
+            setLastProcessedKey(newest.key);
           }
         }
         
@@ -38,7 +42,7 @@ export default function Home() {
     });
 
     return () => unsubscribe();
-  }, [latestEntry]);
+  }, [lastProcessedKey]);
 
   const handleAttendanceSubmit = (record: AttendanceRecord) => {
     // Update local state immediately for better UX

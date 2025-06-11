@@ -52,6 +52,7 @@ export type InsertStudent = z.infer<typeof insertStudentSchema>;
 export type Student = typeof students.$inferSelect;
 
 export interface AttendanceRecord {
+  key?: string;
   timestamp: string;
   roll: string;
   name?: string;

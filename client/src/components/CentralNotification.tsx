@@ -52,9 +52,12 @@ export default function CentralNotification({ latestEntry }: CentralNotification
             <div className="flex-1">
               <h3 className="text-xl font-bold mb-1">Student Has Entered!</h3>
               <div className="space-y-1">
-                <p className="text-lg font-semibold">Roll #{currentEntry.roll}</p>
-                {currentEntry.name && (
-                  <p className="text-green-100 font-medium">{currentEntry.name}</p>
+                {currentEntry.name ? (
+                  // IoT device entry (has name field)
+                  <p className="text-lg font-semibold">{currentEntry.name} has entered</p>
+                ) : (
+                  // App simulation entry (has proximity field)
+                  <p className="text-lg font-semibold">Roll #{currentEntry.roll} has entered</p>
                 )}
                 <p className="text-green-200 text-sm">
                   {new Date(currentEntry.timestamp).toLocaleTimeString()}

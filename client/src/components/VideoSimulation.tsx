@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import rvceLogoPath from "@assets/image_1749634411299.png";
 
 export default function VideoSimulation() {
   const [isPlaying, setIsPlaying] = useState(false);
@@ -54,18 +55,22 @@ export default function VideoSimulation() {
           <div className="lg:col-span-2">
             {/* Simulated video player */}
             <div className="relative bg-gray-900 rounded-lg overflow-hidden aspect-video">
-              {/* Classroom simulation background */}
-              <div className="w-full h-full bg-gradient-to-br from-blue-900 to-blue-700 flex items-center justify-center">
-                <div className="text-center text-white">
+              {/* RVCE institutional background */}
+              <div className="w-full h-full bg-gradient-to-br from-white to-gray-100 flex items-center justify-center">
+                <div className="text-center">
                   <div className="mb-4">
-                    <i className="fas fa-chalkboard-teacher text-6xl mb-4 opacity-60"></i>
+                    <img 
+                      src={rvceLogoPath} 
+                      alt="RVCE Institution Logo" 
+                      className="w-32 h-32 mx-auto mb-4 opacity-80"
+                    />
                     <div className="grid grid-cols-3 gap-2 max-w-xs mx-auto">
                       {[...Array(9)].map((_, i) => (
-                        <div key={i} className="w-8 h-8 bg-white bg-opacity-20 rounded"></div>
+                        <div key={i} className="w-8 h-8 bg-blue-600 bg-opacity-20 rounded"></div>
                       ))}
                     </div>
                   </div>
-                  <p className="text-lg">Smart Attendance System Demo</p>
+                  <p className="text-lg text-gray-700 font-semibold">RVCE Smart Attendance System</p>
                 </div>
               </div>
               
