@@ -14,11 +14,19 @@ export default function AttendancePanel({ recentAttendance }: AttendancePanelPro
   const [attendanceRate, setAttendanceRate] = useState(0);
 
   useEffect(() => {
-    // Calculate student stats from real attendance data
+    // Calculate student stats from real attendance data, counting only one attendance per student per day
     const uniqueStudents = new Map<string, { roll: string; name?: string; attendanceCount: number }>();
-    
+    const today = new Date().toDateString();
+    const seenToday = new Set<string>();
+
     recentAttendance.forEach(record => {
+      const isToday = new Date(record.timestamp).toDateString() === today;
       const key = record.roll;
+
+      // If it's already counted today, skip it
+      if (isToday && seenToday.has(key)) return;
+      if (isToday) seenToday.add(key);
+
       if (uniqueStudents.has(key)) {
         uniqueStudents.get(key)!.attendanceCount++;
       } else {
@@ -41,11 +49,13 @@ export default function AttendancePanel({ recentAttendance }: AttendancePanelPro
       percentage: Math.round((student.attendanceCount / totalSessionsToDate) * 100)
     }));
 
-    setStudentStats(calculatedStats);
-    setTotalStudents(calculatedStats.length);
+    // Filter out students with missing or undefined roll numbers
+    const filteredStats = calculatedStats.filter(student => student.roll && student.roll.trim() !== "");
+    setStudentStats(filteredStats);
+    setTotalStudents(filteredStats.length);
     
     // Calculate present today from recent attendance
-    const today = new Date().toDateString();
+    // (This logic is unchanged and is still correct)
     const todayAttendance = recentAttendance.filter(record => 
       new Date(record.timestamp).toDateString() === today
     );

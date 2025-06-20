@@ -1,5 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { database, ref, onValue } from "@/lib/firebase";
+import { get, child } from "firebase/database";
 import VideoSimulation from "@/components/VideoSimulation";
 import SensorsPanel from "@/components/SensorsPanel";
 import AttendancePanel from "@/components/AttendancePanel";
@@ -12,6 +13,15 @@ export default function Home() {
   const [recentAttendance, setRecentAttendance] = useState<AttendanceRecord[]>([]);
   const [latestEntry, setLatestEntry] = useState<AttendanceRecord | null>(null);
   const [lastProcessedKey, setLastProcessedKey] = useState<string | null>(null);
+  // Face verification state
+  const [rollNumber, setRollNumber] = useState("");
+  const [verificationResult, setVerificationResult] = useState<string | null>(null);
+  const [verifying, setVerifying] = useState(false);
+
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const [cameraError, setCameraError] = useState<string | null>(null);
+
+  const [studentList, setStudentList] = useState<{ roll: string; name: string }[]>([]);
 
   useEffect(() => {
     // Listen for real-time attendance updates from Firebase
@@ -46,9 +56,62 @@ export default function Home() {
     return () => unsubscribe();
   }, [lastProcessedKey]);
 
+  useEffect(() => {
+    const startCamera = async () => {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+          videoRef.current.play();
+        }
+      } catch (err) {
+        const message = err instanceof Error ? err.message : "Unknown error";
+        setCameraError(message);
+      }
+    };
+
+    startCamera();
+  }, []);
+
+  useEffect(() => {
+    const studentsRef = ref(database, "students");
+    const unsubscribe = onValue(studentsRef, (snapshot) => {
+      const data = snapshot.val();
+      if (data) {
+        const list = Object.values(data)
+          .filter((value: any) => value.roll_number && value.name)
+          .map((value: any) => ({
+            roll: value.roll_number,
+            name: value.name
+          }));
+        setStudentList(list);
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
+
   const handleAttendanceSubmit = (record: AttendanceRecord) => {
-    // Update local state immediately for better UX
-    setRecentAttendance(prev => [record, ...prev]);
+    const today = new Date().toISOString().split("T")[0];
+    const alreadyMarked = recentAttendance.some((entry) => {
+      return (
+        entry.roll === record.roll &&
+        String(entry.timestamp).split("T")[0] === today
+      );
+    });
+
+    if (!alreadyMarked) {
+      const newRecord = {
+        key: `temp-${Date.now()}`,
+        timestamp: new Date().toISOString(),
+        roll: record.roll,
+        name: record.name,
+        proximity: true
+      };
+      setRecentAttendance(prev => [newRecord, ...prev]);
+      setLatestEntry(newRecord);
+      setLastProcessedKey(newRecord.key);
+    }
   };
 
   return (
@@ -82,6 +145,99 @@ export default function Home() {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Face Verification Section */}
+        <div className="mb-6 bg-white p-4 rounded-lg shadow-sm border">
+          <h2 className="text-lg font-semibold mb-2">Face Verification</h2>
+          <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+            <div>
+              <video
+                ref={videoRef}
+                className="rounded border w-full sm:max-w-xs"
+                style={{ maxHeight: "200px" }}
+                autoPlay
+                muted
+              />
+              {cameraError && (
+                <p className="mt-2 text-sm text-red-600">Camera error: {cameraError}</p>
+              )}
+            </div>
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+              <input
+                type="text"
+                value={rollNumber}
+                onChange={(e) => setRollNumber(e.target.value)}
+                placeholder="Enter Roll Number"
+                className="border px-4 py-2 rounded-md w-full sm:w-auto"
+              />
+              <button
+                onClick={async () => {
+                  setVerifying(true);
+                  setVerificationResult(null);
+                  try {
+                    const res = await fetch("http://localhost:5001/verify-face", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ roll_number: rollNumber }),
+                    });
+                    const data = await res.json();
+                    if (data.verified) {
+                      setVerificationResult(`✅ Verified: ${data.name}`);
+                      const today = new Date().toISOString().split("T")[0];
+                      const alreadyMarked = recentAttendance.some((entry) => {
+                        return (
+                          entry.roll === rollNumber &&
+                          String(entry.timestamp).split("T")[0] === today
+                        );
+                      });
+                      if (!alreadyMarked) {
+                        const newRecord = {
+                          key: `temp-${Date.now()}`,
+                          timestamp: new Date().toISOString(),
+                          roll: rollNumber,
+                          name: data.name,
+                          proximity: true
+                        };
+                        setRecentAttendance(prev => [newRecord, ...prev]);
+                        setLatestEntry(newRecord);
+                        setLastProcessedKey(newRecord.key);
+                      }
+                    } else {
+                      setVerificationResult("❌ Face not matched.");
+                    }
+                  } catch (err) {
+                    const errorMsg = err instanceof Error ? err.message : "Unknown error";
+                    setVerificationResult(`❌ Error: ${errorMsg}`);
+                  } finally {
+                    setVerifying(false);
+                  }
+                }}
+                className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition"
+                disabled={verifying || !rollNumber}
+              >
+                {verifying ? "Verifying..." : "Verify Face"}
+              </button>
+            </div>
+          </div>
+          {verificationResult && (
+            <p className="mt-3 text-sm text-gray-700">{verificationResult}</p>
+          )}
+        </div>
+
+        <div className="mb-6 bg-white p-4 rounded-lg shadow-sm border">
+          <h2 className="text-lg font-semibold mb-2">Student Roster</h2>
+          {studentList.length === 0 ? (
+            <p className="text-sm text-gray-500">Loading student list...</p>
+          ) : (
+            <ul className="list-disc pl-5 space-y-1">
+              {Array.from(new Map(studentList.map(s => [s.name, s])).values()).map((student) => (
+                <li key={student.roll}>
+                  <span className="font-medium">{student.roll}</span> - {student.name}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+
         {/* Video Simulation Section */}
         <VideoSimulation />
 

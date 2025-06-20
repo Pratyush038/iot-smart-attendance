@@ -1,4 +1,5 @@
 import cv2
+import cv2.face
 import numpy as np
 import firebase_admin
 from google.cloud import firestore as gcp_firestore

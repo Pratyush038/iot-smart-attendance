@@ -56,6 +56,18 @@ export default function StudentRegistration() {
       const result = await response.json();
 
       if (result.success) {
+        const { database, ref, push, serverTimestamp } = await import("@/lib/firebase");
+
+        const studentData = {
+          roll_number: rollNumber.trim(),
+          name: studentName.trim(),
+          created_at: serverTimestamp(),
+          face_registered: true
+        };
+
+        const studentsRef = ref(database, 'students');
+        await push(studentsRef, studentData);
+
         setRegistrationStatus('success');
         setStatusMessage(`Successfully registered ${studentName} with ${result.samples_captured} face samples`);
         

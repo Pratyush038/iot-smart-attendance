@@ -11,10 +11,15 @@ export default function CentralNotification({ latestEntry }: CentralNotification
   const [currentEntry, setCurrentEntry] = useState<AttendanceRecord | null>(null);
 
   useEffect(() => {
-    if (latestEntry && latestEntry !== currentEntry) {
+    if (
+      latestEntry &&
+      (!currentEntry ||
+        latestEntry.roll !== currentEntry.roll ||
+        latestEntry.timestamp !== currentEntry.timestamp)
+    ) {
       setCurrentEntry(latestEntry);
       setShowNotification(true);
-      
+
       // Auto-hide notification after 5 seconds
       const timer = setTimeout(() => {
         setShowNotification(false);

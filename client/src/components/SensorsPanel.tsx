@@ -19,6 +19,7 @@ export default function SensorsPanel({ onAttendanceSubmit }: SensorsPanelProps) 
   const [buzzerActive, setBuzzerActive] = useState(false);
   const [showFaceVerification, setShowFaceVerification] = useState(false);
   const [pendingRollNumber, setPendingRollNumber] = useState("");
+  const [recentAttendance, setRecentAttendance] = useState<AttendanceRecord[]>([]);
   
   const { toast } = useToast();
   const audioContextRef = useRef<AudioContext | null>(null);
@@ -112,31 +113,49 @@ export default function SensorsPanel({ onAttendanceSubmit }: SensorsPanelProps) 
     
     if (verified) {
       try {
+        // --- Duplicate check logic start ---
+        const today = new Date().toISOString().split("T")[0];
+
+        const duplicateToday = recentAttendance.some((entry) => {
+          return entry.roll === pendingRollNumber &&
+                 String(entry.timestamp).split("T")[0] === today;
+        });
+
+        if (duplicateToday) {
+          toast({
+            title: "Duplicate Entry",
+            description: `Roll #${pendingRollNumber} already marked present today.`,
+            variant: "default",
+          });
+          setCurrentInput("");
+          setIsSubmitting(false);
+          setPendingRollNumber("");
+          return;
+        }
+        // --- Duplicate check logic end ---
+
         const attendanceRecord: AttendanceRecord = {
           timestamp: new Date().toISOString(),
           roll: pendingRollNumber,
           name: studentName,
           proximity: proximityEnabled
         };
-        
-        // Push to Firebase
+
         const attendanceRef = ref(database, 'attendance');
         await push(attendanceRef, {
           ...attendanceRecord,
           timestamp: serverTimestamp(),
-          verified: true // Mark as verified through face recognition
+          verified: true
         });
-        
-        // Show feedback
+
         showFeedback();
         onAttendanceSubmit(attendanceRecord);
-        
+
         toast({
           title: "Attendance Verified & Recorded!",
           description: `${studentName || `Roll #${pendingRollNumber}`} - Face verification successful`,
         });
-        
-        // Clear input
+
         setCurrentInput("");
       } catch (error) {
         console.error("Failed to submit attendance:", error);
