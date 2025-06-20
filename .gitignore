@@ -1,6 +1,41 @@
-node_modules
-dist
+# Node/Vite frontend (client/)
+client/node_modules/
+client/.vite/
+client/dist/
+client/.next/
+client/.DS_Store
+
+# Python backend
+__pycache__/
+*.py[cod]
+*.egg-info/
+.env
+.env.*
+.env.local
+*.log
+*.sqlite3
+*.db
+*.pkl
+
+# VSCode
+.vscode/
+
+# OS
 .DS_Store
-server/public
-vite.config.ts.*
-*.tar.gz
+Thumbs.db
+
+# Virtualenvs
+env/
+venv/
+ENV/
+.venv/
+
+# Build outputs
+*.out
+*.so
+*.exe
+*.dll
+
+# Firebase credentials or keys
+firebase_config.json
+node_modules
