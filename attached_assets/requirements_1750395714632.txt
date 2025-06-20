@@ -1,0 +1,4 @@
+opencv-contrib-python==4.8.1.78
+firebase-admin==6.2.0
+numpy==1.24.3
+Pillow==10.0.0

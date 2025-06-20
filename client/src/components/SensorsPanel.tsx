@@ -4,6 +4,7 @@ import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { database, ref, push, serverTimestamp } from "@/lib/firebase";
 import { useToast } from "@/hooks/use-toast";
+import FaceVerificationModal from "@/components/FaceVerificationModal";
 import type { AttendanceRecord } from "@shared/schema";
 
 interface SensorsPanelProps {
@@ -16,6 +17,8 @@ export default function SensorsPanel({ onAttendanceSubmit }: SensorsPanelProps) 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [neopixelActive, setNeopixelActive] = useState(false);
   const [buzzerActive, setBuzzerActive] = useState(false);
+  const [showFaceVerification, setShowFaceVerification] = useState(false);
+  const [pendingRollNumber, setPendingRollNumber] = useState("");
   
   const { toast } = useToast();
   const audioContextRef = useRef<AudioContext | null>(null);
@@ -93,43 +96,66 @@ export default function SensorsPanel({ onAttendanceSubmit }: SensorsPanelProps) 
       return;
     }
     
+    // Step 1: Show face verification modal
+    setPendingRollNumber(currentInput);
+    setShowFaceVerification(true);
     setIsSubmitting(true);
     
-    try {
-      const attendanceRecord: AttendanceRecord = {
-        timestamp: new Date().toISOString(),
-        roll: currentInput,
-        proximity: proximityEnabled
-      };
-      
-      // Push to Firebase
-      const attendanceRef = ref(database, 'attendance');
-      await push(attendanceRef, {
-        ...attendanceRecord,
-        timestamp: serverTimestamp()
-      });
-      
-      // Show feedback
-      showFeedback();
-      onAttendanceSubmit(attendanceRecord);
-      
+    toast({
+      title: "Face Verification Required",
+      description: `Please verify your identity for Roll #${currentInput}`,
+    });
+  };
+
+  const handleVerificationComplete = async (verified: boolean, studentName?: string) => {
+    setShowFaceVerification(false);
+    
+    if (verified) {
+      try {
+        const attendanceRecord: AttendanceRecord = {
+          timestamp: new Date().toISOString(),
+          roll: pendingRollNumber,
+          name: studentName,
+          proximity: proximityEnabled
+        };
+        
+        // Push to Firebase
+        const attendanceRef = ref(database, 'attendance');
+        await push(attendanceRef, {
+          ...attendanceRecord,
+          timestamp: serverTimestamp(),
+          verified: true // Mark as verified through face recognition
+        });
+        
+        // Show feedback
+        showFeedback();
+        onAttendanceSubmit(attendanceRecord);
+        
+        toast({
+          title: "Attendance Verified & Recorded!",
+          description: `${studentName || `Roll #${pendingRollNumber}`} - Face verification successful`,
+        });
+        
+        // Clear input
+        setCurrentInput("");
+      } catch (error) {
+        console.error("Failed to submit attendance:", error);
+        toast({
+          title: "Error",
+          description: "Failed to record attendance. Please try again.",
+          variant: "destructive",
+        });
+      }
+    } else {
       toast({
-        title: "Attendance Recorded!",
-        description: `Roll #${currentInput} checked in successfully`,
-      });
-      
-      // Clear input
-      setCurrentInput("");
-    } catch (error) {
-      console.error("Failed to submit attendance:", error);
-      toast({
-        title: "Error",
-        description: "Failed to record attendance. Please try again.",
+        title: "Attendance Not Recorded",
+        description: "Face verification failed. Attendance not marked.",
         variant: "destructive",
       });
-    } finally {
-      setIsSubmitting(false);
     }
+    
+    setIsSubmitting(false);
+    setPendingRollNumber("");
   };
 
   const keypadButtons = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '*', '0', '#'];
@@ -259,6 +285,18 @@ export default function SensorsPanel({ onAttendanceSubmit }: SensorsPanelProps) 
             </p>
           </div>
         </div>
+
+        {/* Face Verification Modal */}
+        <FaceVerificationModal
+          isOpen={showFaceVerification}
+          onClose={() => {
+            setShowFaceVerification(false);
+            setIsSubmitting(false);
+            setPendingRollNumber("");
+          }}
+          rollNumber={pendingRollNumber}
+          onVerificationComplete={handleVerificationComplete}
+        />
       </CardContent>
     </Card>
   );

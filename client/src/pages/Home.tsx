@@ -4,6 +4,7 @@ import VideoSimulation from "@/components/VideoSimulation";
 import SensorsPanel from "@/components/SensorsPanel";
 import AttendancePanel from "@/components/AttendancePanel";
 import CentralNotification from "@/components/CentralNotification";
+import StudentRegistration from "@/components/StudentRegistration";
 import type { AttendanceRecord } from "@shared/schema";
 
 export default function Home() {
@@ -31,9 +32,9 @@ export default function Home() {
         // Check for new entries by comparing the latest key
         if (attendanceArray.length > 0) {
           const newest = attendanceArray[0];
-          if (newest.key !== lastProcessedKey) {
+          if (newest.key && newest.key !== lastProcessedKey) {
             setLatestEntry(newest);
-            setLastProcessedKey(newest.key);
+            setLastProcessedKey(newest.key || "");
           }
         }
         
@@ -69,6 +70,7 @@ export default function Home() {
                 <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
                 <span>Firebase Connected</span>
               </div>
+              <StudentRegistration />
               <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
                 <i className="fas fa-cog mr-2"></i>Settings
               </button>

@@ -53,11 +53,17 @@ export default function CentralNotification({ latestEntry }: CentralNotification
               <h3 className="text-xl font-bold mb-1">Student Has Entered!</h3>
               <div className="space-y-1">
                 {currentEntry.name ? (
-                  // IoT device entry (has name field)
+                  // IoT device entry or verified entry (has name field)
                   <p className="text-lg font-semibold">{currentEntry.name} has entered</p>
                 ) : (
                   // App simulation entry (has proximity field)
                   <p className="text-lg font-semibold">Roll #{currentEntry.roll} has entered</p>
+                )}
+                {(currentEntry as any).verified && (
+                  <div className="flex items-center justify-center mt-2">
+                    <i className="fas fa-shield-check text-green-200 mr-1"></i>
+                    <span className="text-xs text-green-200">Face Verified</span>
+                  </div>
                 )}
                 <p className="text-green-200 text-sm">
                   {new Date(currentEntry.timestamp).toLocaleTimeString()}
