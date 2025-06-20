@@ -39,3 +39,50 @@ ENV/
 # Firebase credentials or keys
 firebase_config.json
 node_modules
+
+# Node/Vite frontend (client/)
+client/node_modules/
+client/.vite/
+client/dist/
+client/.next/
+client/.DS_Store
+
+# Python backend
+__pycache__/
+*.py[cod]
+*.egg-info/
+*.log
+*.sqlite3
+*.db
+*.pkl
+
+# Python environments
+env/
+venv/
+.venv/
+ENV/
+
+# Firebase or private config
+*.json
+*.key
+*.pem
+.env
+.env.*
+.env.local
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# Editor settings
+.vscode/
+
+# Replit (remove these from Git)
+.replit
+replit.nix
+
+# Build outputs
+*.out
+*.so
+*.exe
+*.dll
