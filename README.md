@@ -1,6 +1,6 @@
-# Smart Attendance System
+# Smart Attendance System with Facial Recognition
 
-A React-based IoT attendance tracking system with Firebase integration that simulates proximity sensors, digital keypads, and provides real-time attendance monitoring with visual and audio feedback.
+A comprehensive React-based IoT attendance tracking system with Firebase integration that features proximity sensor simulation, digital keypads, facial recognition verification, and real-time attendance monitoring with visual and audio feedback.
 
 ## 🚀 Features
 
@@ -10,6 +10,13 @@ A React-based IoT attendance tracking system with Firebase integration that simu
 - **Visual Feedback**: NeoPixel LED simulation (green circle animation)
 - **Audio Feedback**: Web Audio API buzzer simulation
 - **Real-time Validation**: Input validation and error handling
+
+### Facial Recognition Verification
+- **Two-Step Authentication**: Roll number entry followed by face verification
+- **Face Registration**: Capture and store facial profiles for students
+- **Real-time Recognition**: Camera-based identity verification
+- **Fallback Options**: System works with or without face recognition service
+- **Security**: Biometric verification prevents attendance fraud
 
 ### Attendance Dashboard
 - **Live Updates**: Real-time attendance data from Firebase
@@ -78,7 +85,20 @@ Set up your Firebase Realtime Database rules:
 }
 ```
 
-### 5. Run the Application
+### 5. Start Face Recognition Service (Optional)
+
+For facial verification features:
+
+```bash
+python start_face_service.py
+```
+
+Or manually:
+```bash
+python face_recognition_service.py
+```
+
+### 6. Run the Application
 
 ```bash
 npm run dev
@@ -86,18 +106,30 @@ npm run dev
 
 The application will be available at `http://localhost:5000`
 
+**Note**: The system works with or without the face recognition service. If the service is unavailable, attendance will be recorded without facial verification.
+
 ## 📱 How to Use
 
-### Simulating Student Check-in
+### Complete Attendance Process with Facial Recognition
 
+#### Option 1: Full Verification (Recommended)
+1. **Register Student**: Click "Register New Student" and capture facial samples
+2. **Enable Proximity Sensor**: Toggle the proximity sensor switch to "Active"
+3. **Enter Roll Number**: Use the digital keypad to enter the student's roll number
+4. **Face Verification**: System automatically opens camera for identity verification
+5. **Verification Result**: 
+   - ✅ **Verified**: Face matches → Attendance recorded with verification badge
+   - ❌ **Failed**: Face doesn't match → No attendance recorded
+6. **Feedback**: NeoPixel LED, buzzer, and notifications confirm successful verification
+
+#### Option 2: Basic Check-in (Fallback)
 1. **Enable Proximity Sensor**: Toggle the proximity sensor switch to "Active"
 2. **Enter Roll Number**: Use the digital keypad to enter a 3-digit roll number
-3. **Submit**: Click the green checkmark button
-4. **Observe Feedback**: 
+3. **Submit**: Click the green checkmark button (if face service unavailable)
+4. **Basic Feedback**: 
    - Green NeoPixel LED lights up and pulses
    - Audio buzzer plays confirmation sound
-   - Success notification appears
-   - Data is instantly logged to Firebase
+   - Data logged to Firebase without verification
 
 ### Monitoring Attendance
 

@@ -45,6 +45,16 @@ export default function FaceVerificationModal({
     setCountdown(15);
 
     try {
+      // Check if face recognition service is available first
+      const statusResponse = await fetch('http://localhost:5001/status', {
+        method: 'GET',
+        signal: AbortSignal.timeout(2000) // 2 second timeout
+      });
+
+      if (!statusResponse.ok) {
+        throw new Error('Service unavailable');
+      }
+
       // Call face recognition service
       const response = await fetch('http://localhost:5001/verify-face', {
         method: 'POST',
@@ -53,7 +63,8 @@ export default function FaceVerificationModal({
         },
         body: JSON.stringify({
           roll_number: rollNumber
-        })
+        }),
+        signal: AbortSignal.timeout(20000) // 20 second timeout
       });
 
       const result = await response.json();

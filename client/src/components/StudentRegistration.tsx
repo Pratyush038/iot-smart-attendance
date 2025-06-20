@@ -31,6 +31,16 @@ export default function StudentRegistration() {
     setStatusMessage("Initializing camera to capture face samples...");
 
     try {
+      // Check if face recognition service is available
+      const statusResponse = await fetch('http://localhost:5001/status', {
+        method: 'GET',
+        signal: AbortSignal.timeout(3000) // 3 second timeout
+      });
+
+      if (!statusResponse.ok) {
+        throw new Error('Face recognition service unavailable');
+      }
+
       const response = await fetch('http://localhost:5001/register-student', {
         method: 'POST',
         headers: {
@@ -39,7 +49,8 @@ export default function StudentRegistration() {
         body: JSON.stringify({
           roll_number: rollNumber.trim(),
           name: studentName.trim()
-        })
+        }),
+        signal: AbortSignal.timeout(30000) // 30 second timeout for registration
       });
 
       const result = await response.json();
@@ -74,13 +85,45 @@ export default function StudentRegistration() {
       }
     } catch (error) {
       setRegistrationStatus('failed');
-      setStatusMessage("Unable to connect to face recognition service");
+      setStatusMessage("Face recognition service unavailable. Registering without facial data.");
       
-      toast({
-        title: "Service Error",
-        description: "Face recognition service is not available. Please ensure it's running.",
-        variant: "destructive"
-      });
+      // Fallback: Register student in Firebase without face data
+      try {
+        const { database, ref, push, serverTimestamp } = await import("@/lib/firebase");
+        
+        const studentData = {
+          roll_number: rollNumber.trim(),
+          name: studentName.trim(),
+          created_at: serverTimestamp(),
+          face_registered: false
+        };
+        
+        const studentsRef = ref(database, 'students');
+        await push(studentsRef, studentData);
+        
+        setRegistrationStatus('success');
+        setStatusMessage(`${studentName} registered successfully. Face recognition can be added later when service is available.`);
+        
+        toast({
+          title: "Student Registered",
+          description: "Registration completed without facial recognition. Face data can be added later.",
+        });
+
+        setTimeout(() => {
+          setRollNumber("");
+          setStudentName("");
+          setRegistrationStatus('idle');
+          setStatusMessage("");
+          setIsOpen(false);
+        }, 3000);
+
+      } catch (fallbackError) {
+        toast({
+          title: "Registration Failed",
+          description: "Unable to register student. Please check Firebase connection.",
+          variant: "destructive"
+        });
+      }
     } finally {
       setIsRegistering(false);
     }
