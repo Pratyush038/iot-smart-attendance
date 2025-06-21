@@ -2,7 +2,7 @@
 
 A comprehensive React-based IoT attendance tracking system with Firebase integration that features proximity sensor simulation, digital keypads, facial recognition verification, and real-time attendance monitoring with visual and audio feedback.
 
-## 🚀 Features
+## Features
 
 ### Sensor Simulation
 - **Proximity Sensor Toggle**: Simulates student approach detection
@@ -29,7 +29,7 @@ A comprehensive React-based IoT attendance tracking system with Firebase integra
 - **Captioned Walkthrough**: 7-step process demonstration
 - **Visual Workflow**: How the sensor system works
 
-## 🛠️ Technology Stack
+## Tech Stack
 
 - **Frontend**: React 18 + TypeScript + Vite
 - **Styling**: Tailwind CSS + shadcn/ui components
@@ -47,8 +47,8 @@ A comprehensive React-based IoT attendance tracking system with Firebase integra
 
 ### 1. Clone and Install
 ```bash
-git clone <repository-url>
-cd smart-attendance-system
+git clone https://github.com/Pratyush038/iot-smart-attendance
+cd iot-smart-attendance
 npm install
 ```
 
@@ -62,7 +62,7 @@ npm install
 
 ### 3. Environment Variables
 
-Set up the following environment variables in Replit:
+Set up the following environment variables:
 
 ```
 VITE_FIREBASE_API_KEY=your_api_key_here
@@ -108,7 +108,7 @@ The application will be available at `http://localhost:5000`
 
 **Note**: The system works with or without the face recognition service. If the service is unavailable, attendance will be recorded without facial verification.
 
-## 📱 How to Use
+## How to Use
 
 ### Complete Attendance Process with Facial Recognition
 
@@ -141,7 +141,7 @@ The application will be available at `http://localhost:5000`
 
 Click the play button on the video simulation to see a step-by-step walkthrough of the entire sensor workflow process.
 
-## 🏗️ Project Structure
+## Project Structure
 
 ```
 ├── client/
@@ -165,7 +165,7 @@ Click the play button on the video simulation to see a step-by-step walkthrough 
 └── README.md
 ```
 
-## 🔋 Core Components
+## Core Components
 
 ### SensorsPanel Component
 - Proximity sensor toggle with visual status indicator
@@ -188,7 +188,7 @@ Click the play button on the video simulation to see a step-by-step walkthrough 
 - Visual workflow explanation
 - Play/pause controls
 
-## 🎯 Key Features Implemented
+## Key Features Implemented
 
 ✅ **Proximity Sensor Simulation**: Toggle switch with visual status  
 ✅ **Digital Keypad**: Full 0-9 number input with display  
@@ -201,11 +201,11 @@ Click the play button on the video simulation to see a step-by-step walkthrough 
 ✅ **Responsive Design**: Mobile-friendly dual-panel layout  
 ✅ **Error Handling**: Input validation and Firebase error management  
 
-## 🔊 Audio Requirements
+## Audio Requirements
 
 The buzzer simulation uses the Web Audio API. Users may need to interact with the page first (click anywhere) to enable audio playback due to browser autoplay policies.
 
-## 🎨 UI/UX Features
+## UI/UX Features
 
 - **Clean Design**: Modern card-based layout with Tailwind CSS
 - **Real-time Updates**: Live status indicators and animations  
@@ -214,17 +214,17 @@ The buzzer simulation uses the Web Audio API. Users may need to interact with th
 - **Accessibility**: ARIA labels and keyboard navigation support
 - **Error States**: Clear error messages and validation feedback
 
-## 🔒 Security Notes
+## Security Notes
 
 - Firebase security rules should be configured for production use
 - Environment variables are properly configured for client-side use
 - Anonymous authentication is used for simplified access
 
-## 🚀 Deployment
+## Deployment
 
-The application is ready for deployment on Replit. All environment variables should be properly configured in the Replit secrets manager.
+The application is ready for deployment. All environment variables should be properly configured.
 
-## 📊 Data Structure
+## Data Structure
 
 ### Attendance Record
 ```typescript
@@ -247,11 +247,11 @@ interface StudentStats {
 }
 ```
 
-## 🎬 Demo Flow
+## Demo Flow
 
 1. Student approaches (proximity sensor activates)
 2. Student enters roll number on keypad
-3. System validates input
+3. System validates input by matching using Facial Recognition 
 4. NeoPixel LED provides visual confirmation
 5. Buzzer provides audio feedback
 6. Data is logged to Firebase in real-time
