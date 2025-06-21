@@ -1,4 +1,4 @@
-# Smart Attendance System with Facial Recognition
+# IoT based Smart Attendance System with Facial Recognition
 
 A comprehensive React-based IoT attendance tracking system with Firebase integration that features proximity sensor simulation, digital keypads, facial recognition verification, and real-time attendance monitoring with visual and audio feedback.
 
