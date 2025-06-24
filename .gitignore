@@ -23,7 +23,7 @@ firebase-config.json
 *.json
 *.key
 *.pem
-
+attached_assets/
 # === Virtual Environments ===
 env/
 venv/
