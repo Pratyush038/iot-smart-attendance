@@ -4,7 +4,7 @@ client/.vite/
 client/dist/
 client/.next/
 client/.DS_Store
-
+node_modules/
 # === Python Backend ===
 __pycache__/
 *.py[cod]
