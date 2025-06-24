@@ -55,8 +55,8 @@ A comprehensive React-based IoT attendance tracking system with Firebase integra
 ### 1. Clone and Install
 
 ```bash
-git clone <repository-url>
-cd smart-attendance-system
+git clone https://github.com/Pratyush038/iot-smart-attendance
+cd iot-smart-attendance
 npm install
 ```
 
