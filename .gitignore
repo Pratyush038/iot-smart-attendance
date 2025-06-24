@@ -1,87 +1,45 @@
-# Node/Vite frontend (client/)
+# === Node.js / Vite Frontend ===
 client/node_modules/
 client/.vite/
 client/dist/
 client/.next/
 client/.DS_Store
 
-# Python backend
+# === Python Backend ===
 __pycache__/
 *.py[cod]
 *.egg-info/
+*.log
+*.sqlite3
+*.db
+*.pkl
+
+# === Environment Variables / Secrets ===
 .env
 .env.*
 .env.local
-*.log
-*.sqlite3
-*.db
-*.pkl
-
-# VSCode
-.vscode/
-
-# OS
-.DS_Store
-Thumbs.db
-
-# Virtualenvs
-env/
-venv/
-ENV/
-.venv/
-
-# Build outputs
-*.out
-*.so
-*.exe
-*.dll
-
-# Firebase credentials or keys
 firebase_config.json
-node_modules
-
-# Node/Vite frontend (client/)
-client/node_modules/
-client/.vite/
-client/dist/
-client/.next/
-client/.DS_Store
-
-# Python backend
-__pycache__/
-*.py[cod]
-*.egg-info/
-*.log
-*.sqlite3
-*.db
-*.pkl
-
-# Python environments
-env/
-venv/
-.venv/
-ENV/
-
-# Firebase or private config
+firebase-config.json
 *.json
 *.key
 *.pem
-.env
-.env.*
-.env.local
 
-# OS junk
+# === Virtual Environments ===
+env/
+venv/
+ENV/
+.venv/
+
+# === OS-specific ===
 .DS_Store
 Thumbs.db
 
-# Editor settings
+# === IDE / Editor ===
 .vscode/
-
-# Replit (remove these from Git)
 .replit
 replit.nix
 
-# Build outputs
+# === Build Outputs / Binaries ===
 *.out
 *.so
 *.exe

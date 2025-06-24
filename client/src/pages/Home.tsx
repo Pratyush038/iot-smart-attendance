@@ -1,13 +1,15 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, Suspense, lazy } from "react";
 import { database, ref, onValue } from "@/lib/firebase";
 import { get, child } from "firebase/database";
 import VideoSimulation from "@/components/VideoSimulation";
 import SensorsPanel from "@/components/SensorsPanel";
-import AttendancePanel from "@/components/AttendancePanel";
 import CentralNotification from "@/components/CentralNotification";
 import StudentRegistration from "@/components/StudentRegistration";
 import ServiceStatus from "@/components/ServiceStatus";
 import type { AttendanceRecord } from "@shared/schema";
+import AttendanceGraphAndReport from "@/components/AttendanceGraphAndReport";
+
+const AttendancePanel = lazy(() => import("@/components/AttendancePanel"));
 
 export default function Home() {
   const [recentAttendance, setRecentAttendance] = useState<AttendanceRecord[]>([]);
@@ -78,12 +80,13 @@ export default function Home() {
     const unsubscribe = onValue(studentsRef, (snapshot) => {
       const data = snapshot.val();
       if (data) {
-        const list = Object.values(data)
+        const rollMap = new Map();
+        Object.values(data)
           .filter((value: any) => value.roll_number && value.name)
-          .map((value: any) => ({
-            roll: value.roll_number,
-            name: value.name
-          }));
+          .forEach((value: any) => {
+            rollMap.set(value.roll_number, value.name);
+          });
+        const list = Array.from(rollMap.entries()).map(([roll, name]) => ({ roll, name })).sort((a, b) => parseInt(a.roll) - parseInt(b.roll));
         setStudentList(list);
       }
     });
@@ -228,13 +231,28 @@ export default function Home() {
           {studentList.length === 0 ? (
             <p className="text-sm text-gray-500">Loading student list...</p>
           ) : (
-            <ul className="list-disc pl-5 space-y-1">
-              {Array.from(new Map(studentList.map(s => [s.name, s])).values()).map((student) => (
-                <li key={student.roll}>
-                  <span className="font-medium">{student.roll}</span> - {student.name}
-                </li>
-              ))}
-            </ul>
+            <div className="bg-gray-50 rounded-2xl p-6 border border-gray-100 shadow-sm">
+              <h3 className="font-semibold text-lg text-gray-900 mb-4 flex items-center gap-2">
+                <i className="fas fa-users text-blue-600"></i>
+                Student Roster
+              </h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                {studentList.map((student) => (
+                  <div
+                    key={student.roll}
+                    className="flex items-center gap-4 bg-white rounded-xl p-4 shadow hover:shadow-md transition-all border border-gray-100"
+                  >
+                    <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center text-blue-700 font-bold text-lg shadow-inner">
+                      {student.roll}
+                    </div>
+                    <div className="flex-1">
+                      <div className="font-semibold text-gray-900 text-lg">{student.name}</div>
+                      <div className="text-xs text-gray-500">Roll No: {student.roll}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           )}
         </div>
 
@@ -247,9 +265,12 @@ export default function Home() {
           <SensorsPanel onAttendanceSubmit={handleAttendanceSubmit} />
 
           {/* Right Panel: Attendance Data */}
-          <AttendancePanel recentAttendance={recentAttendance} />
+          <Suspense fallback={<div className="text-center py-8 text-lg text-gray-400">Loading dashboard...</div>}>
+            <AttendancePanel recentAttendance={recentAttendance} studentList={studentList} />
+          </Suspense>
         </div>
       </main>
+      <AttendanceGraphAndReport />
     </div>
   );
 }

@@ -18,14 +18,22 @@ from flask_cors import CORS
 import threading
 import time
 
+# Load .env variables
+from dotenv import load_dotenv
+load_dotenv()
+
+print("DEBUG: FIREBASE_CONFIG_PATH =", os.getenv("FIREBASE_CONFIG_PATH"))
+print("DEBUG: File exists?", os.path.exists(os.getenv("FIREBASE_CONFIG_PATH", "")))
+
 class FaceVerificationService:
-    def __init__(self, firebase_config_path="firebase-config.json"):
+    def __init__(self, firebase_config_path = os.getenv("FIREBASE_CONFIG_PATH", "firebase-config.json")):
         """Initialize the Face Verification Service"""
         # Initialize Firebase
         if not firebase_admin._apps:
-            os.environ["GOOGLE_CLOUD_PROJECT"] = "smart-attendance-system-038"
+            os.environ["GOOGLE_CLOUD_PROJECT"] = os.getenv("GOOGLE_CLOUD_PROJECT", "smart-attendance-system-038")
             
             if os.path.exists(firebase_config_path):
+                print("DEBUG: Attempting to initialize Firebase with config at:", firebase_config_path)
                 cred = credentials.Certificate(firebase_config_path)
                 creds = service_account.Credentials.from_service_account_file(firebase_config_path)
                 firebase_admin.initialize_app(cred, {
@@ -33,6 +41,7 @@ class FaceVerificationService:
                     'storageBucket': 'smart-attendance-system-038.appspot.com'
                 })
                 print("Firebase initialized with project ID: smart-attendance-system-038")
+                print("✅ Firebase initialized — proceeding to load encodings")
                 self.db = gcp_firestore.Client(project="smart-attendance-system-038", credentials=creds)
                 self.bucket = storage.bucket()
             else:
@@ -55,6 +64,7 @@ class FaceVerificationService:
         
         # Load existing face data if Firebase is available
         if self.db:
+            print("🔄 Loading known face encodings from Firebase...")
             self.load_face_data_from_firebase()
         
         # Camera setup
@@ -65,8 +75,17 @@ class FaceVerificationService:
     def load_face_data_from_firebase(self):
         """Load face data from Firebase"""
         try:
+            print("📡 Connecting to Firebase Firestore to load student face data...")
             students_ref = self.db.collection('students')
-            docs = students_ref.stream()
+            try:
+                print("⏳ Fetching documents from Firestore...")
+                start_time = time.time()
+                docs = list(students_ref.stream())
+                elapsed = time.time() - start_time
+                print(f"✅ Retrieved {len(docs)} documents in {elapsed:.2f} seconds")
+            except Exception as e:
+                print(f"❌ Error streaming documents from Firestore: {e}")
+                return False
             
             self.known_faces = {}
             self.known_names = {}
@@ -81,6 +100,7 @@ class FaceVerificationService:
                 student_data = doc.to_dict()
                 roll_number = student_data['roll_number']
                 name = student_data['name']
+                print(f"📁 Found student: {roll_number} ({name}) — Face data present? {'face_data' in student_data}")
                 
                 if 'face_data' in student_data:
                     face_bytes = base64.b64decode(student_data['face_data'])
@@ -185,7 +205,7 @@ class FaceVerificationService:
         
         return self.verification_result
     
-    def capture_face_samples_for_new_student(self, roll_number, name, num_samples=10):
+    def capture_face_samples_for_new_student(self, roll_number, name, num_samples=50):
         """Capture face samples for a new student"""
         cap = cv2.VideoCapture(0)
         face_samples = []

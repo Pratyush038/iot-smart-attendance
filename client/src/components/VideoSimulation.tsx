@@ -11,10 +11,10 @@ export default function VideoSimulation() {
     "Step 1: Student approaches the proximity sensor...",
     "Step 2: Proximity sensor detects student presence",
     "Step 3: Student enters roll number on keypad",
-    "Step 4: System validates the input",
-    "Step 5: NeoPixel LED confirms successful check-in",
-    "Step 6: Buzzer provides audio feedback",
-    "Step 7: Data is logged to Firebase in real-time"
+    "Step 4: System triggers face recognition for identity verification",
+    "Step 5: Face recognition confirms identity match",
+    "Step 6: NeoPixel LED and buzzer provide feedback",
+    "Step 7: Attendance data is logged to Firebase in real-time"
   ];
 
   const playSimulation = () => {
@@ -37,10 +37,10 @@ export default function VideoSimulation() {
     { step: 1, text: "Student approaches the proximity sensor" },
     { step: 2, text: "Proximity sensor detects student presence" },
     { step: 3, text: "Student enters roll number on keypad" },
-    { step: 4, text: "System validates the input" },
-    { step: 5, text: "NeoPixel LED confirms successful check-in" },
-    { step: 6, text: "Buzzer provides audio feedback" },
-    { step: 7, text: "Data is logged to Firebase in real-time" }
+    { step: 4, text: "System triggers face recognition for identity verification" },
+    { step: 5, text: "Face recognition confirms identity match" },
+    { step: 6, text: "NeoPixel LED and buzzer provide feedback" },
+    { step: 7, text: "Attendance data is logged to Firebase in real-time" }
   ];
 
   return (
